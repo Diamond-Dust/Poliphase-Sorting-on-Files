@@ -12,7 +12,6 @@ int main()
 	std::string currentRecord;
 	for (int i = 0; i < 10; i++) {
 		myTape->readRecord(currentRecord);
-		myTape->nextRecord();
 		std::cout << currentRecord << "|" << std::endl;
 	}
 
@@ -20,14 +19,13 @@ int main()
 
 	for (int i = 0; i < 10; i++) {
 		myTape->writeRecord(i+3.14, i*3.14*i*2.71);
-		myTape->nextRecord();
 	}
+	myTape->flush();
 
 	std::cout << std::endl << "----------------------------------" << std::endl << std::endl;
 	
 	for (int i = 0; i < 10; i++) {
 		myTape->readRecord(currentRecord);
-		myTape->nextRecord();
 		std::cout << currentRecord << "|" << std::endl;
 	}
 

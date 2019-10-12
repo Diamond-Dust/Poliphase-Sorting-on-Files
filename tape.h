@@ -20,23 +20,22 @@
 // Nie ruszamy drugiej tasmy,  do reszty dodajemy tyle rekordow, ile jest na drugiej tasmie
 //Powtorz az nie dojdziesz do ostatniej tasmy
 
-//Akcja zapisu lub odczytu ma automatycznie przejsc dalej
-
 class Tape
 {
 	public:
 		Tape(std::string pFilePath, int tapeSize);
-		/* Try to roll tape forward to the next record. If the tape ends, loop around. If the tape is empty, return false. */
-		bool nextRecord();
 		/* Clear current record. Leaves an empty line in its place, to simulate an empty space on the tape. If the tape does not exist, return false. */
 		bool clearRecord();
-		/* Insert a record as the current line. Overwrites any data there. If the tape does not exist, return false. */
+		/* Insert a record as the current line. Overwrites any data there. If the tape does not exist, return false. Go to the next line. */
 		bool writeRecord(double pI, double pR);
-		/* Read a record on the current line. If the tape does not exist, return false. */
+		/* Read a record on the current line. If the tape does not exist, return false. Go to the next line.*/
 		bool readRecord(std::string& pOutput);
+		void flush();
 		~Tape();
 
 	private:
+		int cRecordNumber,
+			cCurrentRecord;
 		std::fstream cFile;
 		static const std::string EMPTY_RECORD;
 		bool writeRecord(std::string pOutput);
