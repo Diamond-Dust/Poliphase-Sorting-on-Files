@@ -30,6 +30,9 @@
     <ClCompile Include="tape.cpp">
       <Filter>Pliki źródłowe\Tape</Filter>
     </ClCompile>
+    <ClCompile Include="bufferedtape.cpp">
+      <Filter>Pliki źródłowe\Tape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="poliphase.h">
@@ -42,6 +45,9 @@
       <Filter>Pliki źródłowe\Record Comparer</Filter>
     </ClInclude>
     <ClInclude Include="tape.h">
+      <Filter>Pliki źródłowe\Tape</Filter>
+    </ClInclude>
+    <ClInclude Include="bufferedtape.h">
       <Filter>Pliki źródłowe\Tape</Filter>
     </ClInclude>
   </ItemGroup>

@@ -152,11 +152,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bufferedtape.cpp" />
     <ClCompile Include="Poliphase Sorting on Files.cpp" />
     <ClCompile Include="recordcomparer.cpp" />
     <ClCompile Include="tape.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bufferedtape.h" />
     <ClInclude Include="tape.h" />
     <ClInclude Include="poliphase.h" />
     <ClInclude Include="recordcomparer.h" />

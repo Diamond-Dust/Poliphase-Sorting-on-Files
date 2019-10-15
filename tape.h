@@ -24,13 +24,16 @@ class Tape
 {
 	public:
 		Tape(std::string pFilePath, int tapeSize);
+
 		/* Clear current record. Leaves an empty line in its place, to simulate an empty space on the tape. If the tape does not exist, return false. */
 		bool clearRecord();
 		/* Insert a record as the current line. Overwrites any data there. If the tape does not exist, return false. Go to the next line. */
 		bool writeRecord(double pI, double pR);
 		/* Read a record on the current line. If the tape does not exist, return false. Go to the next line.*/
 		bool readRecord(std::string& pOutput);
+		/* Flushes the filestream. Can cause errors in writing further into the file. */
 		void flush();
+
 		~Tape();
 
 	private:
