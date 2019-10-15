@@ -3,12 +3,9 @@
 const std::string BufferedTape::EMPTY_RECORD = "                                                                                \n";
 const int BufferedTape::RECORD_LENGTH = 81;
 
-BufferedTape::BufferedTape()
-{
-	BufferedTape(1000, 20);
-}
+BufferedTape::BufferedTape() : BufferedTape(1000, 20) { }
 
-BufferedTape::BufferedTape(int pTapeSize, int pBufferSize)
+BufferedTape::BufferedTape(int pTapeSize, int pBufferSize) : cBufferCount(0), cBufferSize(pBufferSize), cMaxBufferSize(pBufferSize), hasRead(false)
 {
 	if (!tmpnam_s(cFileName, L_tmpnam*sizeof(char)))
 	{
@@ -28,12 +25,6 @@ BufferedTape::BufferedTape(int pTapeSize, int pBufferSize)
 	cFile.seekg(0, std::ios::beg);
 
 	cBuffer = (char*)malloc(sizeof(char) * pBufferSize * RECORD_LENGTH);
-	cBufferCount = 0;
-	cBufferSize = pBufferSize;
-	cMaxBufferSize = pBufferSize;
-	hasRead = false;
-
-	//cFile.read(cBuffer, cBufferSize * RECORD_LENGTH * sizeof(char));
 }
 
 bool BufferedTape::clearRecord()
@@ -108,7 +99,6 @@ bool BufferedTape::readRecord(std::string& pOutput)
 	pOutput.assign(cBuffer + cBufferCount * RECORD_LENGTH, RECORD_LENGTH * sizeof(char));
 	cBufferCount++;
 	hasRead = true;
-	//std::cout << cFile.good() << std::endl;
 
 	return true;
 }
@@ -123,8 +113,19 @@ void BufferedTape::flush()
 
 	int sizeToWrite = cBufferCount * RECORD_LENGTH * sizeof(char);
 	cFile.write(cBuffer, sizeToWrite);
+	cFile.flush();
 	cBufferCount = 0;
-	//cOutBuffer[0] = '\0';
+}
+
+void BufferedTape::clear()
+{
+	cFile.close();
+	cFile.open(cFileName, std::fstream::in | std::fstream::out | std::fstream::trunc | std::fstream::binary);
+	if (!cFile.is_open())
+	{
+		std::cerr << "Tape could not be opened." << std::endl;
+		return;
+	}
 }
 
 bool BufferedTape::writeRecord(std::string pOutput)
@@ -140,12 +141,11 @@ bool BufferedTape::writeRecord(std::string pOutput)
 	{
 		/*	If we have already reached the end of the file, loop around. 
 			If not, just move the pointer to the last unread position.  */
-		if (cBufferCount == cBufferSize)
+		if (cFile.peek() == EOF)
 		{
 			cFile.seekp(0);
 			cFile.clear();
 			cBufferSize = cMaxBufferSize;
-			hasRead = false;
 		}
 		else
 		{
@@ -156,6 +156,7 @@ bool BufferedTape::writeRecord(std::string pOutput)
 	}
 
 	strcpy_s(cBuffer + cBufferCount * RECORD_LENGTH, sizeof(char) * RECORD_LENGTH + 1, pOutput.c_str());
+	hasRead = false;
 	cBufferCount++;
 	std::cout << cFile.good() << std::endl;
 
@@ -164,8 +165,7 @@ bool BufferedTape::writeRecord(std::string pOutput)
 	{
 		int sizeToWrite = cBufferCount * RECORD_LENGTH * sizeof(char);
 		cFile.write(cBuffer, sizeToWrite);
-		std::cout << cFile.gcount() << std::endl;
-		hasRead = false;
+		cFile.flush();
 		cBufferCount = 0;
 	}
 

@@ -14,6 +14,8 @@ class BufferedTape {
 	bool readRecord(std::string& pOutput);
 	/* Flushes the filestream. Can cause errors in writing further into the file. */
 	void flush();
+	/* Clears the entire file. */
+	void clear();
 
 	~BufferedTape();
 	private:
