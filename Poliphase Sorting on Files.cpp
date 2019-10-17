@@ -4,6 +4,7 @@
 #include <iostream>
 #include "tape.h"
 #include "bufferedtape.h"
+#include "tapehandler.h"
 
 int main()
 {
@@ -30,7 +31,7 @@ int main()
 		std::cout << currentRecord << "|" << std::endl;
 	}*/
 
-	BufferedTape myTape(10, 3);
+	/*BufferedTape myTape(10, 3);
 
 	std::string currentRecord;
 	for (int i = 0; i < 10; i++) {
@@ -51,7 +52,15 @@ int main()
 	for (int i = 0; i < 10; i++) {
 		myTape.readRecord(currentRecord);
 		std::cout << currentRecord << "|" << std::endl;
-	}
+	}*/
+
+	TapeHandler myTape{};
+
+	myTape.printCount();
+	std::cout << " ---------------------------- " << std::endl;
+	myTape.distribute();
+	std::cout << " ---------------------------- " << std::endl;
+	myTape.printCount();
 
 	return 0;
 }

@@ -156,6 +156,7 @@
     <ClCompile Include="Poliphase Sorting on Files.cpp" />
     <ClCompile Include="recordcomparer.cpp" />
     <ClCompile Include="tape.cpp" />
+    <ClCompile Include="tapehandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bufferedtape.h" />

@@ -10,12 +10,15 @@ class BufferedTape {
 	bool clearRecord();
 	/* Insert a record as the current line. Overwrites any data there. If the tape does not exist, return false. Go to the next line. */
 	bool writeRecord(double pI, double pR);
+	bool writeRecord(std::string pOutput);
 	/* Read a record on the current line. If the tape does not exist, return false. Go to the next line.*/
 	bool readRecord(std::string& pOutput);
 	/* Flushes the filestream. Can cause errors in writing further into the file. */
 	void flush();
 	/* Clears the entire file. */
 	void clear();
+	/* Rewind the tape back to the start. */
+	void rewind();
 
 	~BufferedTape();
 	private:
@@ -28,5 +31,4 @@ class BufferedTape {
 		char cFileName[L_tmpnam];
 		static const int RECORD_LENGTH;
 		static const std::string EMPTY_RECORD;
-		bool writeRecord(std::string pOutput);
 };

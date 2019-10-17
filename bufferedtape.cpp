@@ -3,7 +3,7 @@
 const std::string BufferedTape::EMPTY_RECORD = "                                                                                \n";
 const int BufferedTape::RECORD_LENGTH = 81;
 
-BufferedTape::BufferedTape() : BufferedTape(1000, 20) { }
+BufferedTape::BufferedTape() : BufferedTape(0, 10) { }
 
 BufferedTape::BufferedTape(int pTapeSize, int pBufferSize) : cBufferCount(0), cBufferSize(pBufferSize), cMaxBufferSize(pBufferSize), hasRead(false)
 {
@@ -21,10 +21,9 @@ BufferedTape::BufferedTape(int pTapeSize, int pBufferSize) : cBufferCount(0), cB
 	{
 		cFile.write(EMPTY_RECORD.c_str(), RECORD_LENGTH);
 	}
-	cFile.clear();
-	cFile.seekg(0, std::ios::beg);
+	rewind();
 
-	cBuffer = (char*)malloc(sizeof(char) * pBufferSize * RECORD_LENGTH);
+	cBuffer = (char*)malloc(sizeof(char) * (pBufferSize * RECORD_LENGTH + 1));	//Needs +1 to combat overflow error  - UB
 }
 
 bool BufferedTape::clearRecord()
@@ -65,6 +64,15 @@ bool BufferedTape::readRecord(std::string& pOutput)
 	if (!hasRead && cBufferCount>0)
 	{
 		flush();
+	}
+
+	/* If at the end of the file, go back to start and notify caller */
+	if (cFile.peek() == EOF)
+	{
+		cFile.seekp(0);
+		cFile.clear();
+		cBufferSize = cMaxBufferSize;
+		return false;
 	}
 
 	/* If the last action was WRITE or we filled our buffer, we need to READ from file. */
@@ -128,6 +136,16 @@ void BufferedTape::clear()
 	}
 }
 
+void BufferedTape::rewind()
+{
+	if (!hasRead)	// Flush the buffer if last action was WRITE
+	{
+		flush();
+	}
+	cFile.seekp(0);
+	cFile.clear();
+}
+
 bool BufferedTape::writeRecord(std::string pOutput)
 {
 	if (!cFile.is_open())
@@ -158,7 +176,6 @@ bool BufferedTape::writeRecord(std::string pOutput)
 	strcpy_s(cBuffer + cBufferCount * RECORD_LENGTH, sizeof(char) * RECORD_LENGTH + 1, pOutput.c_str());
 	hasRead = false;
 	cBufferCount++;
-	std::cout << cFile.good() << std::endl;
 
 	/* If we have filled our buffer, we need to dump it. */
 	if (cBufferCount >= cMaxBufferSize)

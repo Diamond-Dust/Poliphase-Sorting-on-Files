@@ -14,7 +14,7 @@
 //Ma byc buforowanie o stalym, duzym? buforze. Wczytujemy/zapisujemy kilka rekordow naraz, potem dopiero wyjmujemy pojedyncze rekordy.
 
 //Nie uzywamy rozkladu Fibonacciego. Zamiast tego:
-//Zaczyna my z X pustymi, jedna z nich zostanie ciagle pusta
+//Zaczynamy z X pustymi, jedna z nich zostanie ciagle pusta
 //Do pierwszej zapisujemy 1 rekord
 // Nie ruszamy pierwszej tasmy, do reszty dodajemy tyle rekordow, ile jest na pierwszej tasmie
 // Nie ruszamy drugiej tasmy,  do reszty dodajemy tyle rekordow, ile jest na drugiej tasmie

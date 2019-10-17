@@ -1,23 +1,27 @@
 #pragma once
 #include<string>
+#include<vector>
+#include<random>
+#include "bufferedtape.h"
 
 class TapeHandler
 {
 	public:
-	TapeHandler();
-	TapeHandler(std::string pBasePath);
-	TapeHandler(int pTapeCount);
-	TapeHandler(std::string pBasePath, int pTapeCount);
-	TapeHandler(std::string pBasePath, std::string pOriginalTapeName, int pTapeCount);
+	TapeHandler(int pRecordCount = 256, int pTapeCount = 3);
+	TapeHandler(std::vector<double> pIs, std::vector<double> pRs, int pTapeCount = 3);
 
-	void setBasePath(std::string pBasePath);
-	void setOriginalTapeName(std::string pOriginalTapeName);
-	void setTapeCount(int pTapeCount);
+	int getTapeCount();
 
-	std::string getBasePath();
-	std::string getOriginalTapeName();
-	int			getTapeCount();
+	/* Distributes the records from the last tape to every other tape. */
+	void distribute();
 
+	void printCount();
+
+
+	~TapeHandler();
 	private:
-		~TapeHandler();
+		BufferedTape* cTapes;
+		int* cDummyCount;
+		int* cRealCount;
+		int cTapeCount;
 };
