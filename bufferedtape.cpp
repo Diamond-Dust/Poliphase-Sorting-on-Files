@@ -69,8 +69,11 @@ bool BufferedTape::readRecord(std::string& pOutput)
 	/* If at the end of the file, go back to start and notify caller */
 	if (cFile.peek() == EOF)
 	{
-		cFile.seekp(0);
+		//std::cout << "-----| " << cFile.tellg() << "|-----" << std::endl;
 		cFile.clear();
+		cFile.seekg(0);
+		cFile.clear();
+		//std::cout << "-----| " << cFile.tellg() << "|-----" << std::endl;
 		cBufferSize = cMaxBufferSize;
 		return false;
 	}
@@ -80,11 +83,13 @@ bool BufferedTape::readRecord(std::string& pOutput)
 	{
 		cBufferCount = 0;
 
+		//std::cout << "-----| " << cFile.tellg() << "|-----" << std::endl;
 		int sizeToRead = cBufferSize * RECORD_LENGTH * sizeof(char);
 		cFile.read(cBuffer, sizeToRead);
 		hasRead = true;
 
 		int readRecords = cFile.gcount() / (RECORD_LENGTH * sizeof(char));
+		//std::cout << "-----| " << cFile.tellg() << "|-----" << std::endl;
 
 		/* If we have reached the end of the file, loop around and notify the caller. */
 		if (readRecords == 0)
@@ -142,8 +147,27 @@ void BufferedTape::rewind()
 	{
 		flush();
 	}
+	cFile.clear();
 	cFile.seekp(0);
 	cFile.clear();
+}
+
+void BufferedTape::printStart()
+{
+	cSave.set(cBuffer, sizeof(char) * (cBufferCount * RECORD_LENGTH), cBufferCount, cMaxBufferSize, cBufferSize, hasRead, cFile.tellg());
+}
+
+void BufferedTape::printEnd()
+{
+	cBufferCount = cSave.cBufferCount;
+	cMaxBufferSize = cSave.cMaxBufferSize;
+	cBufferSize = cSave.cBufferSize;
+	hasRead = cSave.hasRead;
+	cFile.seekg(cSave.savedPosition);
+	cFile.clear();
+	strncpy_s(cBuffer, sizeof(char) * (cBufferCount * RECORD_LENGTH) + 1, cSave.cBuffer, sizeof(char) * (cBufferCount * RECORD_LENGTH));
+	free(cSave.cBuffer);
+	cSave.cBuffer = (char*)malloc(sizeof(char) * 1);
 }
 
 bool BufferedTape::writeRecord(std::string pOutput)

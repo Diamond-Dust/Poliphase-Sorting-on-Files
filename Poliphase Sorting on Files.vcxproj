@@ -157,6 +157,7 @@
     <ClCompile Include="recordcomparer.cpp" />
     <ClCompile Include="tape.cpp" />
     <ClCompile Include="tapehandler.cpp" />
+    <ClCompile Include="tapesave.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bufferedtape.h" />
@@ -164,6 +165,7 @@
     <ClInclude Include="poliphase.h" />
     <ClInclude Include="recordcomparer.h" />
     <ClInclude Include="tapehandler.h" />
+    <ClInclude Include="tapesave.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

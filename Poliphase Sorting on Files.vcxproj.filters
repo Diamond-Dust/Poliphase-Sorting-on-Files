@@ -36,6 +36,9 @@
     <ClCompile Include="tapehandler.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="tapesave.cpp">
+      <Filter>Pliki źródłowe\Tape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="poliphase.h">
@@ -51,6 +54,9 @@
       <Filter>Pliki źródłowe\Tape</Filter>
     </ClInclude>
     <ClInclude Include="bufferedtape.h">
+      <Filter>Pliki źródłowe\Tape</Filter>
+    </ClInclude>
+    <ClInclude Include="tapesave.h">
       <Filter>Pliki źródłowe\Tape</Filter>
     </ClInclude>
   </ItemGroup>

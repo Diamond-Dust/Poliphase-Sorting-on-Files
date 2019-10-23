@@ -61,6 +61,11 @@ int main()
 	myTape.distribute();
 	std::cout << " ---------------------------- " << std::endl;
 	myTape.printCount();
+	myTape.printDetail();
+	std::cout << " ---------------------------- " << std::endl;
+	myTape.sort();
+	std::cout << " ---------------------------- " << std::endl;
+	myTape.printCount();
 
 	return 0;
 }

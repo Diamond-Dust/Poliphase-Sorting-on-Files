@@ -1,5 +1,6 @@
 #pragma once
 #include "tape.h"
+#include "tapesave.h"
 
 class BufferedTape {
 	public:
@@ -19,6 +20,10 @@ class BufferedTape {
 	void clear();
 	/* Rewind the tape back to the start. */
 	void rewind();
+	/* Remember where you are, so that printout can happen */
+	void printStart();
+	/* Restore the state from before the printout */
+	void printEnd();
 
 	~BufferedTape();
 	private:
@@ -29,6 +34,9 @@ class BufferedTape {
 		bool hasRead;
 		std::fstream cFile;
 		char cFileName[L_tmpnam];
+
+		TapeSave cSave{};
+
 		static const int RECORD_LENGTH;
 		static const std::string EMPTY_RECORD;
 };

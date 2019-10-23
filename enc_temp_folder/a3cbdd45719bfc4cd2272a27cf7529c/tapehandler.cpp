@@ -186,7 +186,6 @@ void TapeHandler::sort()
 			}
 		}
 		printCount();
-		std::cout << " --- " << std::endl;
 	}
 	//printDetail();
 }
