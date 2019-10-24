@@ -10,7 +10,7 @@ class TapeHandler
 {
 	public:
 	/* Max number of tapes is _MAX_INT_DIG */
-	TapeHandler(int pRecordCount = 256, int pTapeCount = 3);
+	TapeHandler(int pRecordCount = 1024*128, int pTapeCount = 3);
 	TapeHandler(std::vector<double> pIs, std::vector<double> pRs, int pTapeCount = 3);
 
 	int getTapeCount();
@@ -37,4 +37,5 @@ class TapeHandler
 		std::bitset<_MAX_INT_DIG> cHasPutItsSeries;
 		std::string* cFirstRecords;
 		int cTapeCount;
+		int cPhaseCount;
 };

@@ -72,6 +72,7 @@ void TapeHandler::distribute()
 		cRealCount[i] = 0;
 	}
 
+	cPhaseCount = 0;
 	std::string record;
 	bool recordsExist = cTapes[cTapeCount - 1].readRecord(record);
 	if (!recordsExist)
@@ -81,7 +82,7 @@ void TapeHandler::distribute()
 	cTapes[0].writeRecord(record);
 	cLastPutRecords[0] = Record::getValue(record);
 	cRealCount[0]++;
-	bool finishedFirstDistributionPhase = false;
+	cSeriesCount[0]++;
 	int seriesCount = 1, currentSeriesCount = 0, currentPosition = 1, skippedPosition = 0;
 	while (cTapes[cTapeCount - 1].readRecord(record))
 	{
@@ -90,9 +91,10 @@ void TapeHandler::distribute()
 
 		if (Record::getValue(record) < cLastPutRecords[currentPosition])	//Start new series only if new records is not in order
 		{
-			cSeriesCount[currentPosition]++;
 			currentSeriesCount++;
+			cSeriesCount[currentPosition]++;
 		}
+		cLastPutRecords[currentPosition] = Record::getValue(record);
 
 		if (currentSeriesCount == seriesCount)			//If we have filled current tape with enough records for now
 		{
@@ -107,9 +109,9 @@ void TapeHandler::distribute()
 				skippedPosition++;
 				if (skippedPosition >= cTapeCount - 1)
 				{
-					finishedFirstDistributionPhase = true;
 					skippedPosition %= (cTapeCount - 1);
 				}
+				cPhaseCount++;
 				//printCount();
 				seriesCount = cSeriesCount[skippedPosition] + cDummyCount[skippedPosition];
 			}
@@ -120,6 +122,8 @@ void TapeHandler::distribute()
 			currentSeriesCount = 0;						//Reset record counting
 		}
 	}
+	cPhaseCount++;
+	//printCount();
 	cDummyCount[currentPosition] += std::max(0, seriesCount - currentSeriesCount);	// If the current is missing some, insert dummies
 	if (currentPosition++ != 0)							// If the run has not finished, insert dummies to the end.
 	{
@@ -129,6 +133,7 @@ void TapeHandler::distribute()
 			currentSeriesCount = 0;
 		}
 	}
+	printCount();
 	cTapes[cTapeCount - 1].clear();
 }
 
@@ -142,53 +147,61 @@ void TapeHandler::sort()
 		return;
 	}
 
-	/* Bitset will tell us whether given tape has alseardy given us a full series. */
+	/* Bitset will tell us whether given tape has already given us a full series. */
 	cHasPutItsSeries = 0;
 	/* cFirstRecords will now double as a way to remember top records from non-empty tapes */
 	for (int i = 0; i < cTapeCount; i++)
 	{
 		if (i != emptyTapeIndex)
 		{
+			cTapes[i].rewind();
 			cTapes[i].readRecord(cFirstRecords[i]);
 		}
 	}
 
-	bool finishedPhase = false;
-	while (!finishedPhase)
+	bool finishedPhase;
+	while (cPhaseCount--)
 	{
+		cHasPutItsSeries = 0;
 		cHasPutItsSeries[emptyTapeIndex] = true;
 		finishedPhase = false;
-		while (cHasPutItsSeries.count() < cTapeCount)	//While some of the tapes have not put their series into the empty tape
+		while (!finishedPhase)
 		{
-			std::string smallestRecord = getSmallestFirstRecord();
-			if (!smallestRecord.empty())	//If it wasn't a dummy
+			while (cHasPutItsSeries.count() < cTapeCount)	//While some of the tapes have not put their series into the empty tape
 			{
-				cTapes[emptyTapeIndex].writeRecord(smallestRecord);
-				cRealCount[emptyTapeIndex]++; 
-			}
-		}
-		cHasPutItsSeries = 0;
-		/* Find from where to start the empty tape countdown */
-		for (int i = 0; i < cTapeCount; i++)
-		{
-			if (i == emptyTapeIndex)
-			{
-				cSeriesCount[i]++;
-			}
-			else
-			{
-				if (cSeriesCount[i] == 0)
+				std::string smallestRecord = getSmallestFirstRecord();
+				if (!smallestRecord.empty())	//If it wasn't a dummy
 				{
+					cTapes[emptyTapeIndex].writeRecord(smallestRecord);
+					cRealCount[emptyTapeIndex]++;
+				}
+			}
+			cHasPutItsSeries = 0;
+			for (int i = 0; i < cTapeCount; i++)
+			{
+				if (cFirstRecords[i] == "")
+				{
+					cHasPutItsSeries[i] = true;
+				}
+			}
+			cSeriesCount[emptyTapeIndex]++;
+			/* Find from where to start the empty tape countdown */
+			for (int i = 0; i < cTapeCount; i++)
+			{
+				if (i != emptyTapeIndex && cSeriesCount[i] == 0)
+				{
+					cTapes[emptyTapeIndex].rewind();
+					cTapes[emptyTapeIndex].readRecord(cFirstRecords[emptyTapeIndex]);
 					emptyTapeIndex = i;
 					cTapes[emptyTapeIndex].clear();
 					finishedPhase = true;
 				}
 			}
+			//printCount();
+			//std::cout << " --- " << std::endl;
 		}
 		printCount();
-		std::cout << " --- " << std::endl;
 	}
-	//printDetail();
 }
 
 void TapeHandler::printCount()
@@ -207,6 +220,7 @@ void TapeHandler::printDetail()
 	for (int i = 0; i < cTapeCount; i++)
 	{
 		cTapes[i].printStart();
+		cTapes[i].rewind();
 		lastValue = INFINITY;
 		if (cRealCount[i] + cDummyCount[i] > 0) 
 		{
@@ -270,11 +284,21 @@ std::string TapeHandler::getSmallestFirstRecord()
 
 	/* Clear up and set flags */
 	bool nextRecord = cTapes[minimumIndex].readRecord(cFirstRecords[minimumIndex]);
-	cRealCount[minimumIndex]--;
-	if (Record::getValue(cFirstRecords[minimumIndex]) < Record::getValue(smallestRecord))	//If the series has ended
+	if (!nextRecord)
 	{
+		cFirstRecords[minimumIndex] = "";
+		cRealCount[minimumIndex]--;
 		cHasPutItsSeries[minimumIndex] = true;
 		cSeriesCount[minimumIndex]--;
+	}
+	else
+	{
+		cRealCount[minimumIndex]--;
+		if (Record::getValue(cFirstRecords[minimumIndex]) < Record::getValue(smallestRecord))	//If the series has ended
+		{
+			cHasPutItsSeries[minimumIndex] = true;
+			cSeriesCount[minimumIndex]--;
+		}
 	}
 
 	return smallestRecord;

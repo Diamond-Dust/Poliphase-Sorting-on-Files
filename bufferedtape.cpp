@@ -3,7 +3,7 @@
 const std::string BufferedTape::EMPTY_RECORD = "                                                                                \n";
 const int BufferedTape::RECORD_LENGTH = 81;
 
-BufferedTape::BufferedTape() : BufferedTape(0, 10) { }
+BufferedTape::BufferedTape() : BufferedTape(0, 100) { }
 
 BufferedTape::BufferedTape(int pTapeSize, int pBufferSize) : cBufferCount(0), cBufferSize(pBufferSize), cMaxBufferSize(pBufferSize), hasRead(false)
 {
@@ -67,7 +67,7 @@ bool BufferedTape::readRecord(std::string& pOutput)
 	}
 
 	/* If at the end of the file, go back to start and notify caller */
-	if (cFile.peek() == EOF)
+	/*if (cFile.peek() == EOF && cBufferCount >= cBufferSize)
 	{
 		//std::cout << "-----| " << cFile.tellg() << "|-----" << std::endl;
 		cFile.clear();
@@ -75,8 +75,9 @@ bool BufferedTape::readRecord(std::string& pOutput)
 		cFile.clear();
 		//std::cout << "-----| " << cFile.tellg() << "|-----" << std::endl;
 		cBufferSize = cMaxBufferSize;
+		hasRead = false;
 		return false;
-	}
+	}*/
 
 	/* If the last action was WRITE or we filled our buffer, we need to READ from file. */
 	if (!hasRead || cBufferCount >= cBufferSize)
@@ -94,10 +95,11 @@ bool BufferedTape::readRecord(std::string& pOutput)
 		/* If we have reached the end of the file, loop around and notify the caller. */
 		if (readRecords == 0)
 		{
-			cFile.seekp(0);
-			cFile.clear();
-			cBufferSize = cMaxBufferSize;
-			cBufferCount = 0;
+			//cFile.seekp(0);
+			//cFile.clear();
+			//cBufferSize = cMaxBufferSize;
+			//cBufferCount = 0;
+			//hasRead = false;
 			return false;
 		}
 
