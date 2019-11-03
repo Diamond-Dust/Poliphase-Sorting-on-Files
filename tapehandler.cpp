@@ -13,6 +13,10 @@ TapeHandler::TapeHandler(int pRecordCount, int pBufferSize, int pTapeCount) : cT
 		cLastPutRecords[i] = INFINITY;
 	}
 	cTapes = new BufferedTape[pTapeCount];
+	for (int i = 0; i < pTapeCount - 1; i++)
+	{
+		cTapes[i] = BufferedTape(pBufferSize);
+	}
 
 	std::vector<double> Is, Rs;
 	double lowerBound = 0;
@@ -41,6 +45,10 @@ TapeHandler::TapeHandler(std::vector<double> pIs, std::vector<double> pRs, int p
 		cLastPutRecords[i] = INFINITY;
 	}
 	cTapes		= new BufferedTape[pTapeCount];
+	for (int i = 0; i < pTapeCount - 1; i++)
+	{
+		cTapes[i] = BufferedTape(pBufferSize);
+	}
 	/* Putting starting records on base tape - last tape */
 	for (std::vector<double>::size_type i = 0; i != pIs.size(); i++)
 	{
@@ -201,12 +209,12 @@ void TapeHandler::distribute(bool pPrint)
 	cPhaseCount++;
 	//printCount();
 	cDummyCount[currentPosition] += std::max(0, seriesCount - currentSeriesCount);	// If the current is missing some, insert dummies
-	if (currentPosition++ != 0)							// If the run has not finished, insert dummies to the end.
+	currentPosition++;					// If the run has not finished, insert dummies to the end.
+	for (; currentPosition < cTapeCount - 1; currentPosition++)
 	{
-		for (; currentPosition < cTapeCount - 1; currentPosition++)
+		if (currentPosition != skippedPosition)
 		{
-			cDummyCount[currentPosition] += seriesCount - currentSeriesCount;
-			currentSeriesCount = 0;
+			cDummyCount[currentPosition] += seriesCount;
 		}
 	}
 	if (pPrint)
@@ -313,16 +321,13 @@ void TapeHandler::printDetail()
 			std::cout << "Tape number " << i << " has now " << cRealCount[i] << " real records:" << std::endl;
 			while (cTapes[i].readRecord(record))
 			{
-				//if (cTapes[i].readRecord(record))	// If read failed, it means that we were on the end of the tape
-				//{
-					if (Record::getValue(record) < lastValue)
-					{
-						std::cout << "\tSeries nr " << seriesNumber << ": \t" << std::endl;
-						seriesNumber++;
-					}
-					lastValue = Record::getValue(record);
-					std::cout << "\t\t" << record;
-				//}
+				if (Record::getValue(record) < lastValue)
+				{
+					std::cout << "\tSeries nr " << seriesNumber << ": \t" << std::endl;
+					seriesNumber++;
+				}
+				lastValue = Record::getValue(record);
+				std::cout << "\t\t" << record;
 			}
 			if (cDummyCount[i] > 0)
 			{
@@ -361,8 +366,6 @@ std::string TapeHandler::getSmallestFirstRecord()
 		{
 			cDummyCount[i]--;
 			cHasPutItsSeries[i] = true;
-			//dummyIndex = i;
-			//break;
 			return "";
 		}
 	}

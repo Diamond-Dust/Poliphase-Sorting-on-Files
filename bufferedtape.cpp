@@ -127,7 +127,7 @@ bool BufferedTape::readRecord(std::string& pOutput)
 
 		int readRecords = cFile.gcount() / (RECORD_LENGTH * sizeof(char));
 
-		/* If we have reached the end of the file, loop around and notify the caller. */
+		/* If we have reached the end of the file, notify the caller. */
 		if (readRecords == 0)
 		{
 			return false;
@@ -157,10 +157,13 @@ void BufferedTape::flush()
 	}
 
 	int sizeToWrite = cBufferCount * RECORD_LENGTH * sizeof(char);
-	cFile.write(cBuffer, sizeToWrite);
-	cDiscWriteCount++;
-	cFile.flush();
-	cBufferCount = 0;
+	if (sizeToWrite > 0)
+	{
+		cFile.write(cBuffer, sizeToWrite);
+		cDiscWriteCount++;
+		cFile.flush();
+		cBufferCount = 0;
+	}
 }
 
 void BufferedTape::clear()
