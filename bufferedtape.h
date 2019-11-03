@@ -4,8 +4,11 @@
 
 class BufferedTape {
 	public:
-	BufferedTape();
-	BufferedTape(int pTapeSize, int pBufferSize);
+	BufferedTape(int pBufferSize=20);
+	BufferedTape(char* pFileName, int pBufferSize=20);
+
+	BufferedTape(const BufferedTape & pTape);
+	BufferedTape& operator=(const BufferedTape& pTape);
 
 	/* Clear current record. Leaves an empty line in its place, to simulate an empty space on the tape. If the tape does not exist, return false. */
 	bool clearRecord();
@@ -26,6 +29,10 @@ class BufferedTape {
 	void printEnd();
 
 	~BufferedTape();
+
+	int cDiscReadCount;
+	int cDiscWriteCount;
+
 	private:
 		char* cBuffer;
 		int cBufferCount;
@@ -33,6 +40,7 @@ class BufferedTape {
 		int cBufferSize;
 		bool hasRead;
 		std::fstream cFile;
+		std::stringstream cRecordStream;
 		char cFileName[L_tmpnam];
 
 		TapeSave cSave{};

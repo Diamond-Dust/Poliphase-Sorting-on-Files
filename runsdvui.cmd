@@ -1,0 +1,2 @@
+cd /d "C:\Twarze\Studia\Struktury Baz Danych\Projekt\Poliphase Sorting on Files" &msbuild "Poliphase Sorting on Files.vcxproj" /t:sdvViewer /p:configuration="Debug" /p:platform="Win32" /p:SolutionDir="C:\Twarze\Studia\Struktury Baz Danych\Projekt\Poliphase Sorting on Files" 
+exit %errorlevel% 

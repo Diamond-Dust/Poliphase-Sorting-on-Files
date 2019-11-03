@@ -1,6 +1,6 @@
 #include "tapehandler.h"
 
-TapeHandler::TapeHandler(int pRecordCount, int pTapeCount) : cTapeCount(std::min(pTapeCount, _MAX_INT_DIG))
+TapeHandler::TapeHandler(int pRecordCount, int pBufferSize, int pTapeCount) : cTapeCount(std::min(pTapeCount, _MAX_INT_DIG))
 {
 	pTapeCount = std::min(pTapeCount, _MAX_INT_DIG);
 	cDummyCount = new int[pTapeCount]();
@@ -28,7 +28,7 @@ TapeHandler::TapeHandler(int pRecordCount, int pTapeCount) : cTapeCount(std::min
 	cTapes[pTapeCount - 1].rewind();
 }
 
-TapeHandler::TapeHandler(std::vector<double> pIs, std::vector<double> pRs, int pTapeCount) : cTapeCount(std::min(pTapeCount, _MAX_INT_DIG))
+TapeHandler::TapeHandler(std::vector<double> pIs, std::vector<double> pRs, int pBufferSize, int pTapeCount) : cTapeCount(std::min(pTapeCount, _MAX_INT_DIG))
 {
 	pTapeCount = std::min(pTapeCount, _MAX_INT_DIG);
 	cDummyCount = new int[pTapeCount]();
@@ -49,12 +49,84 @@ TapeHandler::TapeHandler(std::vector<double> pIs, std::vector<double> pRs, int p
 	cTapes[pTapeCount - 1].rewind();
 }
 
+TapeHandler::TapeHandler(char* pFileName, int pBufferSize, int pTapeCount)
+{
+	pTapeCount = std::min(pTapeCount, _MAX_INT_DIG);
+	cDummyCount = new int[pTapeCount]();
+	cRealCount = new int[pTapeCount]();
+	cSeriesCount = new int[pTapeCount]();
+	cLastPutRecords = new double[pTapeCount];
+	cFirstRecords = new std::string[pTapeCount];
+	for (int i = 0; i < pTapeCount; i++)
+	{
+		cLastPutRecords[i] = INFINITY;
+	}
+	cTapes = new BufferedTape[pTapeCount];
+	for (int i = 0; i < pTapeCount-1; i++)
+	{
+		cTapes[i] = BufferedTape(pBufferSize);
+	}
+	cTapes[pTapeCount - 1] = BufferedTape(pFileName, pBufferSize);
+}
+
+TapeHandler::TapeHandler(const TapeHandler& pTape)
+{
+	cTapeCount = pTape.cTapeCount;
+	cDummyCount = new int[cTapeCount]();
+	cRealCount = new int[cTapeCount]();
+	cSeriesCount = new int[cTapeCount]();
+	cLastPutRecords = new double[cTapeCount];
+	cFirstRecords = new std::string[cTapeCount];
+	memcpy(cDummyCount, pTape.cDummyCount, sizeof(int) * cTapeCount);
+	memcpy(cRealCount, pTape.cRealCount, sizeof(int) * cTapeCount);
+	memcpy(cSeriesCount, pTape.cSeriesCount, sizeof(int) * cTapeCount);
+	memcpy(cLastPutRecords, pTape.cLastPutRecords, sizeof(double) * cTapeCount);
+	std::copy(pTape.cFirstRecords, cFirstRecords + cTapeCount, cFirstRecords);
+	cTapes = new BufferedTape[cTapeCount];
+	for (int i = 0; i < cTapeCount; i++)
+	{
+		cTapes[i] = pTape.cTapes[i];
+	}
+}
+
+TapeHandler& TapeHandler::operator=(const TapeHandler& pTape)
+{
+	delete[] cDummyCount;
+	delete[] cRealCount;
+	delete[] cLastPutRecords;
+	delete[] cTapes;
+	delete[] cFirstRecords;
+
+
+	cTapeCount = pTape.cTapeCount;
+	cDummyCount = new int[cTapeCount]();
+	cRealCount = new int[cTapeCount]();
+	cSeriesCount = new int[cTapeCount]();
+	cLastPutRecords = new double[cTapeCount];
+	cFirstRecords = new std::string[cTapeCount];
+	memcpy(cDummyCount, pTape.cDummyCount, sizeof(int) * cTapeCount);
+	memcpy(cRealCount, pTape.cRealCount, sizeof(int) * cTapeCount);
+	memcpy(cSeriesCount, pTape.cSeriesCount, sizeof(int) * cTapeCount);
+	memcpy(cLastPutRecords, pTape.cLastPutRecords, sizeof(double) * cTapeCount);
+	for (int i = 0; i < pTape.cTapeCount; i++)
+	{
+		cFirstRecords[i] = pTape.cFirstRecords[i];
+	}
+	cTapes = new BufferedTape[cTapeCount];
+	for (int i = 0; i < cTapeCount; i++)
+	{
+		cTapes[i] = pTape.cTapes[i];
+	}
+
+	return *this;
+}
+
 int TapeHandler::getTapeCount()
 {
 	return cTapeCount;
 }
 
-void TapeHandler::distribute()
+void TapeHandler::distribute(bool pPrint)
 {
 	/* Check if everything is on one tape */
 	for (int i = 0; i < cTapeCount-1; i++)
@@ -112,7 +184,11 @@ void TapeHandler::distribute()
 					skippedPosition %= (cTapeCount - 1);
 				}
 				cPhaseCount++;
-				//printCount();
+				if (pPrint)
+				{
+					printCount();
+					std::cout << " --- " << std::endl;
+				}
 				seriesCount = cSeriesCount[skippedPosition] + cDummyCount[skippedPosition];
 			}
 			if (currentPosition == skippedPosition)		//If we should skip new spot, do it
@@ -133,11 +209,15 @@ void TapeHandler::distribute()
 			currentSeriesCount = 0;
 		}
 	}
-	printCount();
+	if (pPrint)
+	{
+		printCount();
+		std::cout << " --- " << std::endl;
+	}
 	cTapes[cTapeCount - 1].clear();
 }
 
-void TapeHandler::sort()
+void TapeHandler::sort(bool pPrint)
 {
 	int emptyTapeIndex = cTapeCount - 1;
 	/* Check if last tape is empty */
@@ -160,7 +240,8 @@ void TapeHandler::sort()
 	}
 
 	bool finishedPhase;
-	while (cPhaseCount--)
+	int phaseCount = cPhaseCount;
+	while (phaseCount--)
 	{
 		cHasPutItsSeries = 0;
 		cHasPutItsSeries[emptyTapeIndex] = true;
@@ -200,7 +281,11 @@ void TapeHandler::sort()
 			//printCount();
 			//std::cout << " --- " << std::endl;
 		}
-		printCount();
+		if (pPrint)
+		{
+			printCount();
+			std::cout << " --- " << std::endl;
+		}
 	}
 }
 
@@ -226,10 +311,10 @@ void TapeHandler::printDetail()
 		{
 			seriesNumber = 0;
 			std::cout << "Tape number " << i << " has now " << cRealCount[i] << " real records:" << std::endl;
-			while (seriesNumber < cSeriesCount[i])
+			while (cTapes[i].readRecord(record))
 			{
-				if (cTapes[i].readRecord(record))	// If read failed, it means that we were on the end of the tape
-				{
+				//if (cTapes[i].readRecord(record))	// If read failed, it means that we were on the end of the tape
+				//{
 					if (Record::getValue(record) < lastValue)
 					{
 						std::cout << "\tSeries nr " << seriesNumber << ": \t" << std::endl;
@@ -237,7 +322,7 @@ void TapeHandler::printDetail()
 					}
 					lastValue = Record::getValue(record);
 					std::cout << "\t\t" << record;
-				}
+				//}
 			}
 			if (cDummyCount[i] > 0)
 			{
@@ -250,6 +335,20 @@ void TapeHandler::printDetail()
 		}
 		cTapes[i].printEnd();
 	}
+}
+
+void TapeHandler::printStats()
+{
+	int discWrites = 0, discReads = 0;
+	for (int i = 0; i < cTapeCount; i++)
+	{
+		discReads += cTapes[i].cDiscReadCount;
+		discWrites += cTapes[i].cDiscWriteCount;
+	}
+	std::cout	<< "Number of phases: "			<< cPhaseCount	<< std::endl
+				<< "Number of disc writes: "	<< discWrites	<< std::endl
+				<< "Number of disc reads: "		<< discReads	<< std::endl;
+
 }
 
 std::string TapeHandler::getSmallestFirstRecord()

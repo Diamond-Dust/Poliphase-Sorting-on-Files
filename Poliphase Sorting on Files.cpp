@@ -6,66 +6,105 @@
 #include "bufferedtape.h"
 #include "tapehandler.h"
 
-int main()
+/*
+	Command line arguments:
+	1: Record gathering method	
+		0	: random
+		1	: by hand
+		2	: file
+	2: Record number / path
+		If 0: was 0 or 1 here input an integer specifying how many records there will be. 
+			0	: 256
+		If 0: was 2, here put a path to the file.
+	3: Buffer size
+		0	:	20
+		Any number greater than 0 will be accepted instead
+	4: Tape number
+		0	: 3
+		Any number greater than 2 but lesser than _MAX_INT_DIG+1 will be accepted instead
+	5: Printing policy
+		0	: The series and record counts will be printed at the end of each phase.
+		1	: No printing will happen.
+		2	: 0 + print out every record at the end.
+	Any error or lack of a value will assume 0 on the corresponding location.
+*/
+int main(int argc, char* argv[])
 {
-    std::cout << "Hello World!\n";
-	/*Tape* myTape = new Tape("./TestTape.txt", 10);
-
-	std::string currentRecord;
-	for (int i = 0; i < 10; i++) {
-		myTape->readRecord(currentRecord);
-		std::cout << currentRecord << "|" << std::endl;
-	}
-
-	std::cout << std::endl << "----------------------------------" << std::endl << std::endl;
-
-	for (int i = 0; i < 10; i++) {
-		myTape->writeRecord(i+3.14, i*3.14*i*2.71);
-	}
-	myTape->flush();
-
-	std::cout << std::endl << "----------------------------------" << std::endl << std::endl;
-	
-	for (int i = 0; i < 10; i++) {
-		myTape->readRecord(currentRecord);
-		std::cout << currentRecord << "|" << std::endl;
-	}*/
-
-	/*BufferedTape myTape(10, 3);
-
-	std::string currentRecord;
-	for (int i = 0; i < 10; i++) {
-		myTape.readRecord(currentRecord);
-		std::cout << currentRecord << "|" << std::endl;
-	}
-
-	std::cout << std::endl << "----------------------------------" << std::endl << std::endl;
-
-	for (int i = 0; i < 10; i++) 
+	//Filling unfilled input arguments
+	if (argc < 6)
 	{
-		myTape.writeRecord(i + 3.14, i * 3.14 * i * 2.71);
+		for (int i = argc; i < 6; i++)
+		{
+			argv[i] = (char*)calloc(1, sizeof(char));
+		}
 	}
-	myTape.flush();
 
-	std::cout << std::endl << "----------------------------------" << std::endl << std::endl;
+	TapeHandler myTape;
+	int recordNumber = std::atoi(argv[2]);
+	recordNumber = (recordNumber < 1) ? 256 : recordNumber;
+	int bufferSize = std::atoi(argv[3]);
+	bufferSize = (bufferSize < 1) ? 20 : bufferSize;
+	int tapeNumber = std::atoi(argv[4]);
+	tapeNumber = (tapeNumber < 3) ? 3 : tapeNumber;
+	bool willPrint = std::atoi(argv[5]) != 1;
+	if (std::atoi(argv[1]) == 1)
+	{
+		std::vector<double> Is, Rs;
+		double I, R;
+		for (int i = 0; i < recordNumber; i++)
+		{
+			std::cin >> I >> R;
+			Is.push_back(I);
+			Rs.push_back(R);
+		}
+		myTape = TapeHandler(Is, Rs, bufferSize, tapeNumber);
+	}
+	else if (std::atoi(argv[1]) == 2)
+	{
 
-	for (int i = 0; i < 10; i++) {
-		myTape.readRecord(currentRecord);
-		std::cout << currentRecord << "|" << std::endl;
-	}*/
+		myTape = TapeHandler(argv[2], bufferSize, tapeNumber);
+	}
+	else
+	{
+		myTape = TapeHandler(recordNumber, bufferSize, tapeNumber);
+	}
 
-	TapeHandler myTape{};
 
-	myTape.printCount();
-	std::cout << " ---------------------------- " << std::endl;
-	myTape.distribute();
-	std::cout << " ---------------------------- " << std::endl;
-	myTape.printCount();
-	//myTape.printDetail();
-	std::cout << " ---------------------------- " << std::endl;
-	myTape.sort();
-	std::cout << " ---------------------------- " << std::endl;
-	myTape.printCount();
+	if (willPrint)
+	{
+		myTape.printCount();
+		std::cout << " ---------------------------- " << std::endl;
+	}
+
+	myTape.distribute(willPrint);
+	if (willPrint)
+	{
+		std::cout << " ---------------------------- " << std::endl;
+		myTape.printCount();
+		std::cout << " ---------------------------- " << std::endl;
+	}
+	myTape.sort(willPrint);
+	if (willPrint)
+	{
+		std::cout << " ---------------------------- " << std::endl;
+		myTape.printCount();
+	}
+
+
+	if (std::atoi(argv[5]) == 2)
+	{
+		std::cout << " ---------------------------- " << std::endl;
+		myTape.printDetail();
+	}
+
+	if (willPrint)
+	{
+		std::cout << " ---------------------------- " << std::endl;
+		myTape.printStats();
+	}
+
+	std::cout << "Sorting has ended. Press enter to delete files." << std::endl;
+	std::getchar();
 
 	return 0;
 }
