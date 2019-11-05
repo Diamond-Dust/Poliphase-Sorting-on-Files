@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 
 	TapeHandler myTape;
 	int recordNumber = std::atoi(argv[2]);
-	recordNumber = (recordNumber < 1) ? 32 : recordNumber;
+	recordNumber = (recordNumber < 1) ? 256 : recordNumber;
 	int bufferSize = std::atoi(argv[3]);
 	bufferSize = (bufferSize < 1) ? 20 : bufferSize;
 	int tapeNumber = std::atoi(argv[4]);
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 		myTape.printCount();
 		std::cout << " ---------------------------- " << std::endl;
 	}
-	if (std::atoi(argv[5]) == 0)
+	/*if (std::atoi(argv[5]) == 0)
 	{
 		std::cout << " ---------------------------- " << std::endl;
 		myTape.printDetail();
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
 		std::cout << " ---------------------------- " << std::endl;
 		myTape.printCount();
 		std::cout << " ---------------------------- " << std::endl;
-	}
+	}*/
 	myTape.sort(willPrint);
 	if (willPrint)
 	{
@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 	}
 
 
-	if (std::atoi(argv[5]) == 0)
+	if (std::atoi(argv[5]) == 2)
 	{
 		std::cout << " ---------------------------- " << std::endl;
 		myTape.printDetail();

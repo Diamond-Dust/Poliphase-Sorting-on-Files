@@ -228,9 +228,11 @@ void BufferedTape::printEnd()
 	cFile.clear();
 	cFile.seekg(cSave.savedPosition);
 	cFile.clear();
-	free(cBuffer);
-	cBuffer = (char*)malloc(sizeof(char) * cBufferSize * RECORD_LENGTH + 1);
+	//free(cBuffer);
+	//cBuffer = (char*)malloc(sizeof(char) * cBufferSize * RECORD_LENGTH + 1);
 	strncpy_s(cBuffer, sizeof(char) * (cBufferSize * RECORD_LENGTH) + 1, cSave.cBuffer, sizeof(char) * (cBufferSize * RECORD_LENGTH));
+	free(cSave.cBuffer);
+	cSave.cBuffer = (char*)malloc(sizeof(char) * RECORD_LENGTH + 1);
 	cSave.IsUsed = false;
 }
 

@@ -313,8 +313,8 @@ void TapeHandler::sort(bool pPrint)
 		}
 		if (pPrint)
 		{
-			printDetail();
-			std::cout << " --- " << std::endl;
+			//printDetail();
+			//std::cout << " --- " << std::endl;
 			printCount();
 			std::cout << " --- " << std::endl;
 		}
@@ -352,7 +352,7 @@ void TapeHandler::printDetail()
 					seriesNumber++;
 				}
 				lastValue = Record::getValue(cFirstRecords[i]);
-				std::cout << "\t\t" << Record::getValue(cFirstRecords[i]) << " " << cFirstRecords[i];
+				std::cout << "\t\t" << Record::getValue(cFirstRecords[i]) << "\t" << cFirstRecords[i];
 			}
 			
 			while (cTapes[i].readRecord(record))
@@ -363,7 +363,7 @@ void TapeHandler::printDetail()
 					seriesNumber++;
 				}
 				lastValue = Record::getValue(record);
-				std::cout << "\t\t" << Record::getValue(record) << " " << record;
+				std::cout << "\t\t" << Record::getValue(record) << "\t" << record;
 			}
 			//cSeriesCount[i] = seriesNumber;
 			if (cDummyCount[i] > 0)
