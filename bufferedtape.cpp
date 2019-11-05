@@ -121,8 +121,6 @@ bool BufferedTape::readRecord(std::string& pOutput)
 		int sizeToRead = cBufferSize * RECORD_LENGTH * sizeof(char);
 		cFile.read(cBuffer, sizeToRead);
 
-		cDiscReadCount++;
-
 		hasRead = true;
 
 		int readRecords = cFile.gcount() / (RECORD_LENGTH * sizeof(char));
@@ -130,8 +128,20 @@ bool BufferedTape::readRecord(std::string& pOutput)
 		/* If we have reached the end of the file, notify the caller. */
 		if (readRecords == 0)
 		{
-			return false;
+			//If we were writing, we need to read from the buffer too
+			if (cSave.IsUsed && !cSave.hasRead && cSave.cBufferWriteIndex < cSave.cBufferCount)
+			{
+				pOutput.assign(cSave.cBuffer + cSave.cBufferWriteIndex * RECORD_LENGTH, RECORD_LENGTH * sizeof(char));
+				cSave.cBufferWriteIndex++;
+				hasRead = false;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
+		cDiscReadCount++;
 
 		/* If the end of the file is coming faster than end of the buffer, make the buffer smaller for now. */
 		if (readRecords < cBufferSize)
@@ -179,18 +189,32 @@ void BufferedTape::clear()
 
 void BufferedTape::rewind()
 {
-	if (!hasRead)	// Flush the buffer if last action was WRITE
+	if (cSave.IsUsed)	// If we are writing out the contents, we don't want to rewind if we were READing - those records are forever lost.
 	{
-		flush();
+		if (!hasRead)	// Rewind if last action was WRITE
+		{
+			cFile.clear();
+			cFile.seekp(0);
+			cFile.clear();
+		}
 	}
-	cFile.clear();
-	cFile.seekp(0);
-	cFile.clear();
+	else
+	{
+		if (!hasRead)	// Flush the buffer if last action was WRITE
+		{
+			flush();
+		}
+		cFile.clear();
+		cFile.seekp(0);
+		cFile.clear();
+	}
 }
 
 void BufferedTape::printStart()
 {
-	cSave.set(cBuffer, sizeof(char) * (cBufferCount * RECORD_LENGTH), cBufferCount, cMaxBufferSize, cBufferSize, hasRead, cDiscReadCount, cDiscWriteCount, cFile.tellg());
+	cSave.set(cBuffer, sizeof(char) * (cBufferSize * RECORD_LENGTH), cBufferCount, cMaxBufferSize, cBufferSize, hasRead, cDiscReadCount, cDiscWriteCount, cFile.tellg());
+	cSave.IsUsed = true;
+	cSave.cBufferWriteIndex = 0;
 }
 
 void BufferedTape::printEnd()
@@ -201,11 +225,13 @@ void BufferedTape::printEnd()
 	hasRead = cSave.hasRead;
 	cDiscReadCount = cSave.cDiscReadCount;
 	cDiscWriteCount = cSave.cDiscWriteCount;
+	cFile.clear();
 	cFile.seekg(cSave.savedPosition);
 	cFile.clear();
-	strncpy_s(cBuffer, sizeof(char) * (cBufferCount * RECORD_LENGTH) + 1, cSave.cBuffer, sizeof(char) * (cBufferCount * RECORD_LENGTH));
-	free(cSave.cBuffer);
-	cSave.cBuffer = (char*)malloc(sizeof(char) * 1);
+	free(cBuffer);
+	cBuffer = (char*)malloc(sizeof(char) * cBufferSize * RECORD_LENGTH + 1);
+	strncpy_s(cBuffer, sizeof(char) * (cBufferSize * RECORD_LENGTH) + 1, cSave.cBuffer, sizeof(char) * (cBufferSize * RECORD_LENGTH));
+	cSave.IsUsed = false;
 }
 
 bool BufferedTape::writeRecord(std::string pOutput)
@@ -223,6 +249,7 @@ bool BufferedTape::writeRecord(std::string pOutput)
 			If not, just move the pointer to the last unread position.  */
 		if (cFile.peek() == EOF)
 		{
+			cFile.clear();
 			cFile.seekp(0);
 			cFile.clear();
 			cBufferSize = cMaxBufferSize;
@@ -233,6 +260,7 @@ bool BufferedTape::writeRecord(std::string pOutput)
 			cFile.seekp(sizeToMove, std::ios_base::cur);
 		}
 		cBufferCount = 0;
+		cBufferSize = cMaxBufferSize;
 	}
 
 	strcpy_s(cBuffer + cBufferCount * RECORD_LENGTH, sizeof(char) * RECORD_LENGTH + 1, pOutput.c_str());

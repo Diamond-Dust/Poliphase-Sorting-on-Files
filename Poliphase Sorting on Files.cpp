@@ -25,7 +25,7 @@
 	5: Printing policy
 		0	: The series and record counts will be printed at the end of each phase.
 		1	: No printing will happen.
-		2	: 0 + print out every record at the end.
+		2	: 0 + print out every record at the end and start.
 	Any error or lack of a value will assume 0 on the corresponding location.
 */
 int main(int argc, char* argv[])
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 
 	TapeHandler myTape;
 	int recordNumber = std::atoi(argv[2]);
-	recordNumber = (recordNumber < 1) ? 256 : recordNumber;
+	recordNumber = (recordNumber < 1) ? 32 : recordNumber;
 	int bufferSize = std::atoi(argv[3]);
 	bufferSize = (bufferSize < 1) ? 20 : bufferSize;
 	int tapeNumber = std::atoi(argv[4]);
@@ -69,6 +69,11 @@ int main(int argc, char* argv[])
 		myTape = TapeHandler(recordNumber, bufferSize, tapeNumber);
 	}
 
+	if (std::atoi(argv[5]) == 2)
+	{
+		std::cout << " ---------------------------- " << std::endl;
+		myTape.printDetail();
+	}
 
 	if (willPrint)
 	{
@@ -83,6 +88,17 @@ int main(int argc, char* argv[])
 		myTape.printCount();
 		std::cout << " ---------------------------- " << std::endl;
 	}
+	if (std::atoi(argv[5]) == 0)
+	{
+		std::cout << " ---------------------------- " << std::endl;
+		myTape.printDetail();
+	}
+	if (willPrint)
+	{
+		std::cout << " ---------------------------- " << std::endl;
+		myTape.printCount();
+		std::cout << " ---------------------------- " << std::endl;
+	}
 	myTape.sort(willPrint);
 	if (willPrint)
 	{
@@ -91,10 +107,15 @@ int main(int argc, char* argv[])
 	}
 
 
-	if (std::atoi(argv[5]) == 2)
+	if (std::atoi(argv[5]) == 0)
 	{
 		std::cout << " ---------------------------- " << std::endl;
 		myTape.printDetail();
+	}
+	if (willPrint)
+	{
+		std::cout << " ---------------------------- " << std::endl;
+		myTape.printCount();
 	}
 
 	if (willPrint)

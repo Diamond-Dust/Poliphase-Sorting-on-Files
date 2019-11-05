@@ -8,6 +8,9 @@ class TapeSave {
 
 		void set(char* pBuffer, int pBufferByteSize, int pBufferCount, int pMaxBufferSize, int pBufferSize, bool pHasRead, int pDiscReadCount, int pDiscWriteCount, std::streampos pPosition);
 
+		bool IsUsed = false;
+		int cBufferWriteIndex;
+
 		char* cBuffer;
 		int cBufferCount;
 		int cMaxBufferSize;
